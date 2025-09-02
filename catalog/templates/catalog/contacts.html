@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,8 +9,11 @@
 <body>
 <div class="container mt-5">
     <h1 class="mb-4">Контактная информация</h1>
+    {% if success %}
         <div class="alert alert-success">Спасибо, ваша заявка отправлена!</div>
+    {% endif %}
     <form method="post" class="mb-4">
+        {% csrf_token %}
         <div class="mb-3">
             <label for="id_name" class="form-label">Имя</label>
             <input type="text" class="form-control" id="id_name" name="name" required>
