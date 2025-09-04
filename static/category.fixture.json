@@ -1,0 +1,18 @@
+[
+{
+    "model": "catalog.category",
+    "pk": 7,
+    "fields": {
+        "name": "Одежда",
+        "description": "Вся одежда"
+    }
+},
+{
+    "model": "catalog.category",
+    "pk": 8,
+    "fields": {
+        "name": "Обувь",
+        "description": "Вся обувь"
+    }
+}
+]
