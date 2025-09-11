@@ -3,7 +3,11 @@ from .models import Product
 
 
 def home_view(request):
-    return render(request, 'catalog/home.html')
+    """
+    Главная страница: отображение списка товаров.
+    """
+    products = Product.objects.all()
+    return render(request, 'catalog/home.html', {"products": products})
 
 
 def contacts_view(request):
