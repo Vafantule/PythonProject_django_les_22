@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Магазин{% endblock %}</title>
+</head>
+<body>
+    {% include "catalog/menu.html" %}
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+    <footer class="bg-light text-center py-3 mt-5">
+        <small>
+          Описание проекта разработки.
+        </small>
+    </footer>
+</body>
+</html>
