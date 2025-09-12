@@ -23,5 +23,20 @@
         <p>Нет товаров для отображения.</p>
         {% endfor %}
     </div>
+    {% if has_prev %}
+    <li class="page-item">
+        <a href="?page={{ page|add:-1 }}" class="page-link">Назад</a>
+    </li>
+    {% endif %}
+    {% for page_number in page_numbers %}
+    <li class="page-item{% if page_number == page %}active{% endif %}">
+        <a href="?page={{ page_number }}>{{ page_number }}" class="page-link"></a>
+    </li>
+    {% endfor %}
+    {% if has_next %}
+    <li class="page-item">
+        <a href="?page{{ page|add:1 }}" class="page-link">Вперёд</a>
+    </li>
+    {% endif %}
 </div>
 {% endblock %}
