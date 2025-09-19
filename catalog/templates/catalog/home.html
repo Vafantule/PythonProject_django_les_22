@@ -3,6 +3,7 @@
 {% block content %}
 <div class="container mt-5">
     <h1 class="mb-4">Добро пожаловать!</h1>
+    <a href="{% url 'add_product' %}" class="btn btn-success mb-4">Добавить товар</a>
     <div class="row">
         {% for product in products %}
         <div class="col-md-4 mb-4">
@@ -23,20 +24,26 @@
         <p>Нет товаров для отображения.</p>
         {% endfor %}
     </div>
-    {% if has_prev %}
-    <li class="page-item">
-        <a href="?page={{ page|add:-1 }}" class="page-link">Назад</a>
-    </li>
-    {% endif %}
-    {% for page_number in page_numbers %}
-    <li class="page-item{% if page_number == page %}active{% endif %}">
-        <a href="?page={{ page_number }}>{{ page_number }}" class="page-link"></a>
-    </li>
-    {% endfor %}
-    {% if has_next %}
-    <li class="page-item">
-        <a href="?page{{ page|add:1 }}" class="page-link">Вперёд</a>
-    </li>
+    {% if num_pages > 1 %}
+    <nav>
+        <ul class="pagination justify-content-center mt-4">
+            {% if has_prev %}
+            <li class="page-item">
+                <a href="?page={{ page|add:-1 }}" class="page-link">Назад</a>
+            </li>
+            {% endif %}
+            {% for page_number in page_numbers %}
+            <li class="page-item{% if page_number == page %} active{% endif %}">
+                <a href="?page={{ page_number }}" class="page-link">{{ page_number }}</a>
+            </li>
+            {% endfor %}
+            {% if has_next %}
+            <li class="page-item">
+                <a href="?page={{ page|add:1 }}" class="page-link">Вперёд</a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
     {% endif %}
 </div>
 {% endblock %}
