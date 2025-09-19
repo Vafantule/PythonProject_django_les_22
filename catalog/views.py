@@ -1,50 +1,83 @@
-from django.shortcuts import render, get_object_or_404, redirect
+from django.shortcuts import render
 from .models import Product, Category
 from django import forms
+from django.views import View
+from django.views.generic import ListView, DetailView
+from django.views.generic import CreateView, DeleteView, UpdateView
+from django.urls import reverse_lazy
 
 
 class ProductForm(forms.ModelForm):
+    """
+    Форма добавления нового товара.
+    """
     class Meta:
         model = Product
         fields = ['name', 'description', 'image', 'category', 'price']
 
 
-def home_view(request):
+class HomeView(ListView):
     """
     Главная страница: отображение списка товаров.
     """
-    products = Product.objects.all()
-    return render(request, 'catalog/home.html', {"products": products})
+    model = Product
+    template_name = "catalog/home.html"
+    context_object_name = "product"
 
 
-def contacts_view(request):
-    success = False
-    if request.method == 'POST':
+class ProductDetailView(DetailView):
+    """
+    Контроллер отображения страницы с подробной информацией о товаре.
+    """
+    model = Product
+    template_name = "catalog/product_detail.html"
+    context_object_name = "product"
+    pk_url_kwarg = "pk"
+
+
+class AddProductView(CreateView):
+    """
+    Форма добавления нового товара.
+    """
+    model = Product
+    form_class = ProductForm
+    template_name = "catalog/add_product.html"
+    success_url = reverse_lazy("home")
+
+
+class UpdateProductView(UpdateView):
+    """
+    Контроллер обновления сведений о товаре.
+    """
+    model = Product
+    form_class = ProductForm
+    template_name = "catalog/update_product.html"
+    success_url = reverse_lazy("home")
+    context_object_name = "product"
+    pk_url_kwarg = "pk"
+
+
+class DeleteProductView(DeleteView):
+    """
+    Контроллер удаления товара.
+    """
+    model = Product
+    template_name = "catalog/delete_product.html"
+    success_url = reverse_lazy("home")
+    context_object_name = "product"
+    pk_url_kwarg = "pk"
+
+
+class ContactsView(View):
+    """
+    Контроллер страницы контактов обработки формы.
+    """
+    def get(self, request):
+        return render(request, "catalog/contacts.html", {"success": True})
+
+    def post(self, request):
         name = request.POST.get('name')
         email = request.POST.get('email')
         message = request.POST.get('message')
         print(f'Вы получили новое сообщение от {name}({email}): {message}')
-        success = True
-    return render(request, 'catalog/contacts.html', {'success': success})
-
-
-def product_detail_view(request, pk: int):
-    """
-    Контроллер для отображения страницы с подробной информацией о товаре.
-    """
-    product = get_object_or_404(Product, pk=pk)
-    return render(request, "catalog/product_detail.html", {"product": product})
-
-
-def add_product_view(request):
-    """
-    Страница с формой добавления нового товара.
-    """
-    if request.method == "POST":
-        form = ProductForm(request.POST, request.FILES)
-        if form.is_valid():
-            form.save()
-            return redirect("home")
-    else:
-        form = ProductForm()
-    return render(request, "catalog/add_product.html", {"form": form})
+        return render(request, 'catalog/contacts.html', {'success': True})
