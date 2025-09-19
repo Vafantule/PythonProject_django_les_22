@@ -1,0 +1,13 @@
+{% extends "catalog/base.html" %}
+{% block title %}{{ view.object.title|default:"Создать запись блога" }}{% endblock %}
+{% block content %}
+<div class="container mt-5">
+    <h2>{{ view.object.title|default:"Создать запись блога" }}</h2>
+    <form method="post" enctype="multipart/form-data" class="mb-4">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-success">Сохранить</button>
+        <a href="{% url 'blog:blog_list' %}" class="btn btn-secondary">Отмена</a>
+    </form>
+</div>
+{% endblock %}
