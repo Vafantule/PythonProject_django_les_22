@@ -12,5 +12,7 @@
     <p><strong>Дата создания: </strong>{{ product.created_at|date:"d.m.Y H:i" }}</p>
     <p><strong>Дата изменения: </strong>{{ product.updated_at|date:"d.m.Y H:i" }}</p>
     <a href="{% url 'home' %}" class="btn btn-secondary">Назад к списку товаров</a>
+    <a href="{% url 'product_update' product.pk %}" class="btn btn-warning ms-2">Изменить</a>
+    <a href="{% url 'product_delete' product.pk %}" class="btn btn-danger ms-2">Удалить</a>
 </div>
 {% endblock %}

@@ -22,7 +22,7 @@ class HomeView(ListView):
     """
     model = Product
     template_name = "catalog/home.html"
-    context_object_name = "product"
+    context_object_name = "products"
 
 
 class ProductDetailView(DetailView):
@@ -51,7 +51,7 @@ class UpdateProductView(UpdateView):
     """
     model = Product
     form_class = ProductForm
-    template_name = "catalog/update_product.html"
+    template_name = "catalog/product_update.html"
     success_url = reverse_lazy("home")
     context_object_name = "product"
     pk_url_kwarg = "pk"
@@ -62,7 +62,7 @@ class DeleteProductView(DeleteView):
     Контроллер удаления товара.
     """
     model = Product
-    template_name = "catalog/delete_product.html"
+    template_name = "catalog/product_delete.html"
     success_url = reverse_lazy("home")
     context_object_name = "product"
     pk_url_kwarg = "pk"
