@@ -1,0 +1,26 @@
+{% extends "catalog/base.html" %}
+{% block title %}Блог{% endblock %}
+{% block content %}
+<div class="container mt-5">
+    <h1>Записи блогов</h1>
+    <a href="{% url 'blog:blog_create' %}" class="btn btn-success mb-3">Создать новую запись</a>
+    <div class="row">
+        {% for blog in blogs %}
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                {% if blog.preview %}
+                    <img src="{{ blog.preview.url }}" class="card-img-top" style="height:200px;object-fit:cover;" alt="{{ blog.title }}">
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title">{{ blog.title }}</h5>
+                    <p class="card-text">{{ blog.content|truncatechars:100 }}</p>
+                    <a href="{% url 'blog:blog_detail' blog.pk %}" class="btn btn-primary">Подробнее</a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <p>Нет блоговых записей.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
