@@ -1,19 +1,20 @@
 from django.shortcuts import render
+from .forms import ProductForm
 from .models import Product, Category
-from django import forms
 from django.views import View
 from django.views.generic import ListView, DetailView
 from django.views.generic import CreateView, DeleteView, UpdateView
 from django.urls import reverse_lazy
+# from django import forms
 
 
-class ProductForm(forms.ModelForm):
-    """
-    Форма добавления нового товара.
-    """
-    class Meta:
-        model = Product
-        fields = ['name', 'description', 'image', 'category', 'price']
+# class ProductForm(forms.ModelForm):
+#     """
+#     Форма добавления нового товара.
+#     """
+#     class Meta:
+#         model = Product
+#         fields = ['name', 'description', 'image', 'category', 'price']
 
 
 class HomeView(ListView):
