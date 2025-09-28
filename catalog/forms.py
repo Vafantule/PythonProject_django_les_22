@@ -35,6 +35,9 @@ def make_forbidden_pattern(text: str) -> Pattern[str | Any]:
 
 FORBIDDEN_PATTERNS = [make_forbidden_pattern(word) for word in FORBIDDEN_WORDS]
 
+MAX_IMAGE_SIZE_MB = 5
+ALLOWED_IMAGE_FORMATS = ("image/jpeg", "image/png")
+
 class ProductForm(forms.ModelForm):
     """
     Форма создания, редактирование продукта с проверкой на исключенные слова и проверка цены.
@@ -88,3 +91,16 @@ class ProductForm(forms.ModelForm):
         if price is not None and price < 0:
             raise ValidationError("Цена товара не должна быть отрицательной.")
         return price
+
+    def clean_image(self) -> Any:
+        """
+        Проверка формата и размера изображения.
+        """
+        image = self.cleaned_data.get("image")
+        if image:
+            if hasattr(image, "content_type"):
+                if image.content_type not in ALLOWED_IMAGE_FORMATS:
+                    raise ValidationError("Разрешены форматы изображений: JPEG, PNG")
+            if image.size > MAX_IMAGE_SIZE_MB * 1024 * 1024:
+                raise ValidationError(f"Размер изображения не должен превышать {MAX_IMAGE_SIZE_MB} МБ")
+        return image
