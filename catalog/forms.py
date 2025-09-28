@@ -1,6 +1,9 @@
+import re
+from re import Pattern
 from typing import Any
 
 from django import forms
+from django.core.exceptions import ValidationError
 
 from .models import Product
 
@@ -17,6 +20,21 @@ FORBIDDEN_WORDS: tuple[str, ...] = (
 )
 
 
+def make_forbidden_pattern(text: str) -> Pattern[str | Any]:
+    """
+    Проверка исключаемых слов с учетом разделителей.
+    """
+    escaped = [re.escape(symbol) for symbol in text]
+    pattern = r""
+    for index, symbol in enumerate(escaped):
+        pattern += symbol
+        if index != len(escaped) -1:
+            pattern += r"\W*"
+    return re.compile(pattern, re.IGNORECASE | re.UNICODE)
+
+
+FORBIDDEN_PATTERNS = [make_forbidden_pattern(word) for word in FORBIDDEN_WORDS]
+
 class ProductForm(forms.ModelForm):
     """
     Форма создания, редактирование продукта с проверкой на исключенные слова и проверка цены.
@@ -30,24 +48,28 @@ class ProductForm(forms.ModelForm):
         Стилизация полей формы с помощью Bootstrap.
         """
         super().__init__(*args, **kwargs)
-        for name, field in self.fields.item():
-            if isinstance(field, forms.BooleanField):
-                field.widget.attrs.update({"class": "form-check-input"})
-            elif isinstance(field.widget, forms.CheckboxInput):
+        for field in self.fields.values():
+            if isinstance(field.widget, forms.CheckboxInput):
                 field.widget.attrs.update({"class": "form-check-input"})
             elif isinstance(field.widget, forms.FileInput):
                 field.widget.attrs.update({"class": "form-control"})
             else:
                 field.widget.attrs.update({"class": "form-control"})
 
+    def _check_forbidden(self, value: str, field_name: str) -> None:
+        """
+        Проверка исключаемых слов по поттерну.
+        """
+        for word, pattern in zip(FORBIDDEN_WORDS, FORBIDDEN_PATTERNS):
+            if pattern.search(value):
+                raise ValidationError(f"{field_name} не должно содержать слово: {word}")
+
     def clean_name(self) -> None:
         """
         Проверка исключенных слов в поле "name".
         """
         name = self.cleaned_data.get("name", "")
-        for word in FORBIDDEN_WORDS:
-            if word.lower() in name.lower():
-                raise forms.ValidationError(f"Название не должно содержать слово: '{word}'")
+        self._check_forbidden(name, "Название")
         return name
 
     def clean_description(self) -> None:
@@ -55,7 +77,14 @@ class ProductForm(forms.ModelForm):
         Проверка исключенных слов в поле "description".
         """
         description = self.cleaned_data.get("description", "")
-        for word in FORBIDDEN_WORDS:
-            if word.lower() in description.lower():
-                raise forms.ValidationError(f"Описание не должно содержать слово: '{word}'")
-            return description
+        self._check_forbidden(description, "Описание")
+        return description
+
+    def clean_price(self) -> None:
+        """
+        Проверка цены товара не отрицательна.
+        """
+        price = self.cleaned_data.get("price")
+        if price is not None and price < 0:
+            raise ValidationError("Цена товара не должна быть отрицательной.")
+        return price

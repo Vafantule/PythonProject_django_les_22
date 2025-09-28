@@ -5,7 +5,17 @@
     <h2>Добавить новый товар</h2>
     <form method="post" enctype="multipart/form-data" class="mb-4">
         {% csrf_token %}
-        {{ form.as_p }}
+        {% for field in form %}
+            <div class="mb-3">
+                {{ field.label_tag }}
+                {{ field }}
+                {% if field.errors %}
+                    <div class="text-danger small">
+                        {{ field.errors|striptags }}
+                    </div>
+                {% endif %}
+            </div>
+        {% endfor %}
         <button type="submit" class="btn btn-success">Сохранить</button>
         <a href="{% url 'home' %}" class="btn btn-secondary">Назад</a>
     </form>
