@@ -1,10 +1,13 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% extends "catalog/base.html" %}
+{% block title %}{% if form.instance.pk %}Редактировать пользователя{% else %}Создать пользователя{% endif %}{% endblock %}
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4">{% if form.instance.pk %}Редактировать пользователя{% else %}Создать пользователя{% endif %}</h2>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">Сохранить</button>
+        <a href="{% url 'users:user_list' %}" class="btn btn-secondary ms-2">Назад</a>
+    </form>
+</div>
+{% endblock %}
