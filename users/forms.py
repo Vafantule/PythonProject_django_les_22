@@ -21,3 +21,12 @@ class UserRegistrationForm(forms.ModelForm):
         if commit:
             user.save()
         return user
+
+
+class UserLoginForm(forms.Form):
+    """
+    Форма авторизации пользователя по email и паролю.
+    """
+    email = forms.EmailField(label="Электронная почта")
+    password = forms.CharField(widget=forms.PasswordInput, label=""
+                                                                 "")

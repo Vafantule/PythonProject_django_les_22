@@ -2,9 +2,12 @@ from django.core.mail import send_mail
 from django.urls import reverse_lazy
 from django.views.generic import ListView, DetailView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView, FormView
-from pyexpat.errors import messages
+from django.contrib.auth import authenticate, login
+from django.shortcuts import redirect
+from django.contrib import messages
 
-from .forms import UserRegistrationForm
+
+from .forms import UserRegistrationForm, UserLoginForm
 from .models import CustomUser
 from typing import Any
 
@@ -77,3 +80,23 @@ class UserRegistrationView(FormView):
             fail_silently=False
         )
         return super().form_valid(form)
+
+
+class UserLoginView(FormView):
+    """
+    Контроллер авторизации пользователя по email & password.
+    """
+    template_name = "user/login.html"
+    form_class = UserLoginForm
+    success_url = reverse_lazy("catalog:index")
+
+    def form_valid(self, form: UserLoginForm) -> Any:
+        email = form.cleaned_data["email"]
+        password = form.cleaned_data["password"]
+        user = authenticate(self.request, email=email, password=password)
+        if user is not None:
+            login(self.request, user)
+            return redirect(self.get_success_url())
+        else:
+            messages.error(self.request, "Неверные email или пароль.")
+            return self.form_invalid(form)
