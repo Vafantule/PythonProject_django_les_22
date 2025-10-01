@@ -17,7 +17,7 @@
             </div>
         {% endfor %}
         <button type="submit" class="btn btn-warning">Сохранить изменения</button>
-        <a href="{% url 'product_detail' product.pk %}" class="btn btn-secondary">Отмена</a>
+        <a href="{% url 'catalog:product_detail' product.pk %}" class="btn btn-secondary">Отмена</a>
     </form>
 </div>
 {% endblock %}
