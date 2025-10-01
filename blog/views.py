@@ -2,7 +2,7 @@ from django import forms
 from .models import BlogPost
 from django.views.generic import ListView, DetailView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 
 
 class BlogPostForm(forms.ModelForm):
@@ -22,6 +22,12 @@ class BlogListView(ListView):
     template_name = "blog/blog_list.html"
     context_object_name = "blogs"
 
+    def get_queryset(self):
+        """
+        Возвращает только опубликованные записи.
+        """
+        return BlogPost.objects.filter(is_published=True)
+
 
 class BlogDetailView(DetailView):
     """
@@ -31,6 +37,15 @@ class BlogDetailView(DetailView):
     template_name = "blog/blog_detail.html"
     context_object_name = "blog"
     pk_url_kwarg = "pk"
+
+    def get_object(self, queryset=None) -> BlogPost:
+        """
+        Обновление счетчика просмотров.
+        """
+        blog = super(). get_object(queryset)
+        blog.views_count += 1
+        blog.save(update_fields=["views_count"])
+        return blog
 
 
 class BlogCreateView(CreateView):
@@ -53,6 +68,12 @@ class BlogUpdateView(UpdateView):
     success_url = reverse_lazy("blog:blog_list")
     pk_url_kwarg = "pk"
     context_object_name = "blog"
+
+    def get_success_url(self) -> str:
+        """
+        Возвращает на страницу после редактирования записи.
+        """
+        return reverse("blog:blog_detail", kwargs={"pk": self.object.pk})
 
 
 class BlogDeleteView(DeleteView):
