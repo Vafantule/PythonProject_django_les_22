@@ -63,10 +63,17 @@ class BlogDetailView(DetailView):
         """
         Обновление счетчика просмотров.
         """
-        blog = super(). get_object(queryset)
+        blog = super().get_object(queryset)
         blog.views_count += 1
         blog.save(update_fields=["views_count"])
         return blog
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+        context["is_content_manager"] = (user.is_authenticates and
+                                         any(group.name == "Контент-менеджер" for group in user.group.all()))
+        return context
 
 
 class BlogCreateView(LoginRequiredMixin, BlogManagePermissionMixin, CreateView):
