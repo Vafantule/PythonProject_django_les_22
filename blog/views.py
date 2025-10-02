@@ -3,6 +3,25 @@ from .models import BlogPost
 from django.views.generic import ListView, DetailView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy, reverse
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.http import HttpResponseForbidden
+
+
+class BlogManagePermissionMixin(UserPassesTestMixin):
+    """
+    Миксин только для контент-менеджеров.
+    """
+    def is_content_manager(self) -> bool:
+        user = self.request.user
+        return user.is_authenticated and any(
+            group.name == "Контент-менеджер" for group in user.groups.all()
+        )
+
+    def test_func(self) -> bool:
+        return self.is_content_manager()
+
+    def handle_no_permission(self):
+        return HttpResponseForbidden("Доступ запрещён. Только для контент-менеджеров.")
 
 
 class BlogPostForm(forms.ModelForm):
