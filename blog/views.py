@@ -1,3 +1,5 @@
+from typing import Any
+
 from django import forms
 from .models import BlogPost
 from django.views.generic import ListView, DetailView
@@ -67,14 +69,20 @@ class BlogDetailView(DetailView):
         return blog
 
 
-class BlogCreateView(CreateView):
+class BlogCreateView(LoginRequiredMixin, BlogManagePermissionMixin, CreateView):
     """
     Контроллер создания записи блога.
     """
     model = BlogPost
     form_class = BlogPostForm
     template_name = "blog/blog_form.html"
-    success_url = reverse_lazy("blog:blog_list")
+
+    def form_valid(self, form: BlogPostForm) -> Any:
+        form.instance.author = self.request.user
+        return super().form_valid(form)
+
+    def get_success_url(self) -> str:
+        return reverse("blog:blog_detail", kwargs={"pk": self.object.pk})
 
 
 class BlogUpdateView(UpdateView):
