@@ -44,7 +44,7 @@ class ProductForm(forms.ModelForm):
     """
     class Meta:
         model = Product
-        fields = ["name", "description", "image", "category", "price",]
+        fields = ["name", "description", "image", "category", "price", "status",]
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         """

@@ -1,0 +1,15 @@
+{% extends "catalog/base.html" %}
+{% block title %}Снять с публикации{% endblock %}
+{% block content %}
+<div class="container mt-5">
+    <h2>Снять товар с публикации</h2>
+    <div class="alert alert-warning">
+        Вы уверены, что хотите снять товар <strong>{{ product.name }}</strong> с публикации?
+    </div>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-warning">Снять с публикации</button>
+        <a href="{% url 'catalog:product_detail' product.pk %}" class="btn btn-secondary ms-2">Отмена</a>
+    </form>
+</div>
+{% endblock %}

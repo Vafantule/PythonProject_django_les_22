@@ -1,11 +1,14 @@
-from django.shortcuts import render
-from .forms import ProductForm
-from .models import Product, Category
+from django.contrib import messages
+from django.contrib.auth.mixins import (LoginRequiredMixin,
+                                        PermissionRequiredMixin)
+from django.shortcuts import render, redirect
+from django.urls import reverse_lazy, reverse
 from django.views import View
-from django.views.generic import ListView, DetailView
-from django.views.generic import CreateView, DeleteView, UpdateView
-from django.urls import reverse_lazy
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.generic import (CreateView, DeleteView, DetailView, ListView,
+                                  UpdateView)
+
+from .forms import ProductForm
+from .models import Category, Product
 
 
 class HomeView(ListView):
@@ -34,11 +37,13 @@ class AddProductView(LoginRequiredMixin, CreateView):
     model = Product
     form_class = ProductForm
     template_name = "catalog/add_product.html"
-    success_url = reverse_lazy("catalog:home")
 
     def form_valid(self, form):
         form.instance.user = self.request.user
         return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse("catalog:product_detail", kwargs={"pk": self.object.pk})
 
 
 class UpdateProductView(LoginRequiredMixin, UpdateView):
@@ -48,7 +53,6 @@ class UpdateProductView(LoginRequiredMixin, UpdateView):
     model = Product
     form_class = ProductForm
     template_name = "catalog/product_update.html"
-    success_url = reverse_lazy("catalog:home")
     context_object_name = "product"
     pk_url_kwarg = "pk"
 
@@ -56,8 +60,11 @@ class UpdateProductView(LoginRequiredMixin, UpdateView):
         form.instance.user = self.request.user
         return super().form_valid(form)
 
+    def get_success_url(self):
+        return reverse("catalog:product_detail", kwargs={"pk": self.object.pk})
 
-class DeleteProductView(LoginRequiredMixin, DeleteView):
+
+class DeleteProductView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
     """
     Контроллер удаления товара.
     """
@@ -66,10 +73,12 @@ class DeleteProductView(LoginRequiredMixin, DeleteView):
     success_url = reverse_lazy("catalog:home")
     context_object_name = "product"
     pk_url_kwarg = "pk"
+    permission_required = "catalog.delete_product"
+    login_url = "users:user_login"
 
-    def form_valid(self, form):
-        form.instance.user = self.request.user
-        return super().form_valid(form)
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        return super().delete(request, *args, **kwargs)
 
 
 class ContactsView(View):
@@ -85,3 +94,26 @@ class ContactsView(View):
         message = request.POST.get('message')
         print(f'Вы получили новое сообщение от {name}({email}): {message}')
         return render(request, 'catalog/contacts.html', {'success': True})
+
+
+class ProductUnpublishView(PermissionRequiredMixin, UpdateView):
+    """
+    Отмена публикации продукта, только пользователям с правами can_unpublish_product.
+    """
+    model = Product
+    fields = []
+    permission_required = "catalog.can_unpublish_product"
+    template_name = "catalog/product_unpublish_confirm.html"
+    login_url = "users:user_login"
+
+    def form_valid(self, form):
+        if self.object.status == "published":
+            self.object.status = "unpublished"
+            self.object.save()
+            messages.success(self.request, "Товар успешно снят с публикации.")
+        else:
+            messages.warning(self.request, "Товар не опубликован, действие невозможно.")
+        return redirect(self.get_success_url())
+
+    def get_success_url(self):
+        return reverse("catalog:product_detail", kwargs={"pk": self.object.pk})

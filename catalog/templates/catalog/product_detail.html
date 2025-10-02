@@ -11,10 +11,16 @@
     <p><strong>Цена: </strong>{{ product.price }} руб.</p>
     <p><strong>Дата создания: </strong>{{ product.created_at|date:"d.m.Y H:i" }}</p>
     <p><strong>Дата изменения: </strong>{{ product.updated_at|date:"d.m.Y H:i" }}</p>
+    <p><strong>Статус товара: </strong>{{ product.get_status_display }}</p>
     <a href="{% url 'catalog:home' %}" class="btn btn-secondary">Назад к списку товаров</a>
     {% if user.is_authenticated %}
         <a href="{% url 'catalog:product_update' product.pk %}" class="btn btn-warning ms-2">Изменить</a>
-        <a href="{% url 'catalog:product_delete' product.pk %}" class="btn btn-danger ms-2">Удалить</a>
+        {% if product.status == "published" and perms.catalog.can_unpublish_product %}
+            <a href="{% url 'catalog:product_unpublish' product.pk %}" class="btn btn-warning">Снять с публикации</a>
+        {% endif %}
+        {% if perms.catalog.delete_product %}
+            <a href="{% url 'catalog:product_delete' product.pk %}" class="btn btn-danger">Удалить</a>
+        {% endif %}
     {% endif %}
 </div>
 {% endblock %}

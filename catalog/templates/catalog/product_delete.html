@@ -8,7 +8,9 @@
     </div>
     <form method="post">
         {% csrf_token %}
-        <button type="submit" class="btn btn-danger">Удалить</button>
+        {% if perms.catalog.delete_product %}
+            <button type="submit" class="btn btn-danger">Удалить</button>
+        {% endif %}
         <a href="{% url 'catalog:product_detail' product.pk %}" class="btn btn-secondary">Отмена</a>
     </form>
 </div>
