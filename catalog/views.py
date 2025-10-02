@@ -5,16 +5,7 @@ from django.views import View
 from django.views.generic import ListView, DetailView
 from django.views.generic import CreateView, DeleteView, UpdateView
 from django.urls import reverse_lazy
-# from django import forms
-
-
-# class ProductForm(forms.ModelForm):
-#     """
-#     Форма добавления нового товара.
-#     """
-#     class Meta:
-#         model = Product
-#         fields = ['name', 'description', 'image', 'category', 'price']
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 
 class HomeView(ListView):
@@ -36,37 +27,49 @@ class ProductDetailView(DetailView):
     pk_url_kwarg = "pk"
 
 
-class AddProductView(CreateView):
+class AddProductView(LoginRequiredMixin, CreateView):
     """
     Форма добавления нового товара.
     """
     model = Product
     form_class = ProductForm
     template_name = "catalog/add_product.html"
-    success_url = reverse_lazy("home")
+    success_url = reverse_lazy("catalog:home")
+
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        return super().form_valid(form)
 
 
-class UpdateProductView(UpdateView):
+class UpdateProductView(LoginRequiredMixin, UpdateView):
     """
     Контроллер обновления сведений о товаре.
     """
     model = Product
     form_class = ProductForm
     template_name = "catalog/product_update.html"
-    success_url = reverse_lazy("home")
+    success_url = reverse_lazy("catalog:home")
     context_object_name = "product"
     pk_url_kwarg = "pk"
 
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        return super().form_valid(form)
 
-class DeleteProductView(DeleteView):
+
+class DeleteProductView(LoginRequiredMixin, DeleteView):
     """
     Контроллер удаления товара.
     """
     model = Product
     template_name = "catalog/product_delete.html"
-    success_url = reverse_lazy("home")
+    success_url = reverse_lazy("catalog:home")
     context_object_name = "product"
     pk_url_kwarg = "pk"
+
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        return super().form_valid(form)
 
 
 class ContactsView(View):
