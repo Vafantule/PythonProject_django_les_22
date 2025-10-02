@@ -85,14 +85,13 @@ class BlogCreateView(LoginRequiredMixin, BlogManagePermissionMixin, CreateView):
         return reverse("blog:blog_detail", kwargs={"pk": self.object.pk})
 
 
-class BlogUpdateView(UpdateView):
+class BlogUpdateView(LoginRequiredMixin, BlogManagePermissionMixin, UpdateView):
     """
     Контроллер обновления записи блога.
     """
     model = BlogPost
     form_class = BlogPostForm
     template_name = "blog/blog_form.html"
-    success_url = reverse_lazy("blog:blog_list")
     pk_url_kwarg = "pk"
     context_object_name = "blog"
 
