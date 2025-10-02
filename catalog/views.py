@@ -2,11 +2,10 @@ from typing import Any
 
 from django.contrib import messages
 from django.contrib.auth.mixins import (LoginRequiredMixin,
-                                        PermissionRequiredMixin,
-                                        UserPassesTestMixin)
+                                        PermissionRequiredMixin, UserPassesTestMixin)
 from django.http import HttpResponseForbidden
-from django.shortcuts import redirect, render
-from django.urls import reverse, reverse_lazy
+from django.shortcuts import render, redirect
+from django.urls import reverse_lazy, reverse
 from django.views import View
 from django.views.generic import (CreateView, DeleteView, DetailView, ListView,
                                   UpdateView)
@@ -32,6 +31,12 @@ class ProductDetailView(DetailView):
     template_name = "catalog/product_detail.html"
     context_object_name = "product"
     pk_url_kwarg = "pk"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+        context['is_moderator'] = (user.is_authenticated and user.groups.filter(name="Модератор продуктов").exists())
+        return context
 
 
 class AddProductView(LoginRequiredMixin, CreateView):
@@ -86,9 +91,9 @@ class DeleteProductView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView)
     permission_required = "catalog.delete_product"
     login_url = "users:user_login"
 
-    def delete(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        return super().delete(request, *args, **kwargs)
+    # def delete(self, request, *args, **kwargs):
+    #     self.object = self.get_object()
+    #     return super().delete(request, *args, **kwargs)
 
     def get_success_url(self) -> str:
         return reverse("catalog:home")
