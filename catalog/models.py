@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 
 
@@ -35,6 +36,8 @@ class Product(models.Model):
     created_at = models.DateTimeField(auto_now=True, verbose_name="Дата создания")
     update_at = models.DateTimeField(auto_now=True, verbose_name="Дата последнего изменения")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="draft", verbose_name="Статус публикации")
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="products",
+                              verbose_name="Владелец", null=True)
 
     class Meta:
         verbose_name = "Продукт"

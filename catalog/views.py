@@ -1,8 +1,12 @@
+from typing import Any
+
 from django.contrib import messages
 from django.contrib.auth.mixins import (LoginRequiredMixin,
-                                        PermissionRequiredMixin)
-from django.shortcuts import render, redirect
-from django.urls import reverse_lazy, reverse
+                                        PermissionRequiredMixin,
+                                        UserPassesTestMixin)
+from django.http import HttpResponseForbidden
+from django.shortcuts import redirect, render
+from django.urls import reverse, reverse_lazy
 from django.views import View
 from django.views.generic import (CreateView, DeleteView, DetailView, ListView,
                                   UpdateView)
@@ -38,15 +42,15 @@ class AddProductView(LoginRequiredMixin, CreateView):
     form_class = ProductForm
     template_name = "catalog/add_product.html"
 
-    def form_valid(self, form):
-        form.instance.user = self.request.user
+    def form_valid(self, form: ProductForm) -> Any:
+        form.instance.owner = self.request.user
         return super().form_valid(form)
 
-    def get_success_url(self):
+    def get_success_url(self) -> str:
         return reverse("catalog:product_detail", kwargs={"pk": self.object.pk})
 
 
-class UpdateProductView(LoginRequiredMixin, UpdateView):
+class UpdateProductView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     """
     Контроллер обновления сведений о товаре.
     """
@@ -60,8 +64,15 @@ class UpdateProductView(LoginRequiredMixin, UpdateView):
         form.instance.user = self.request.user
         return super().form_valid(form)
 
-    def get_success_url(self):
+    def get_success_url(self) -> str:
         return reverse("catalog:product_detail", kwargs={"pk": self.object.pk})
+
+    def test_func(self) -> bool:
+        product = self.get_object()
+        return self.request.user == product.owner
+
+    def handle_no_permission(self):
+        return HttpResponseForbidden("Редактировать продукт может только владелец.")
 
 
 class DeleteProductView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
@@ -70,7 +81,6 @@ class DeleteProductView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView)
     """
     model = Product
     template_name = "catalog/product_delete.html"
-    success_url = reverse_lazy("catalog:home")
     context_object_name = "product"
     pk_url_kwarg = "pk"
     permission_required = "catalog.delete_product"
@@ -79,6 +89,17 @@ class DeleteProductView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView)
     def delete(self, request, *args, **kwargs):
         self.object = self.get_object()
         return super().delete(request, *args, **kwargs)
+
+    def get_success_url(self) -> str:
+        return reverse("catalog:home")
+
+    def test_func(self) -> bool:
+        product = self.get_object()
+        user = self.request.user
+        return user == product.owner or user.group.filter(name="Модератор продуктов").exists()
+
+    def handle_no_permission(self):
+        return HttpResponseForbidden("Удалять продукт может только владелец или модератор.")
 
 
 class ContactsView(View):
