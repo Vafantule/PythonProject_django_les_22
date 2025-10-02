@@ -102,12 +102,14 @@ class BlogUpdateView(LoginRequiredMixin, BlogManagePermissionMixin, UpdateView):
         return reverse("blog:blog_detail", kwargs={"pk": self.object.pk})
 
 
-class BlogDeleteView(DeleteView):
+class BlogDeleteView(LoginRequiredMixin, BlogManagePermissionMixin, DeleteView):
     """
     Контроллер удаления записи блога.
     """
     model = BlogPost
     template_name = "blog/blog_delete_confirm.html"
-    success_url = reverse_lazy("blog:blog_list")
     pk_url_kwarg = "pk"
     context_object_name = "blog"
+
+    def get_success_url(self) -> str:
+        return reverse("blog:blog_list")
