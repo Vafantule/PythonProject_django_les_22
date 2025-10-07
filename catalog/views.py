@@ -9,7 +9,11 @@ from django.urls import reverse_lazy, reverse
 from django.views import View
 from django.views.generic import (CreateView, DeleteView, DetailView, ListView,
                                   UpdateView)
+from django.views.decorators.cache import cache_page
+from django.utils.decorators import method_decorator
+from django.core.cache import cache
 
+from django_les_22.settings import CACHE_ENABLED
 from .forms import ProductForm
 from .models import Category, Product
 
@@ -17,10 +21,24 @@ from .models import Category, Product
 class HomeView(ListView):
     """
     Главная страница: отображение списка товаров.
+    Добавлено низкоуровневое кеширование (Redis).
     """
     model = Product
     template_name = "catalog/home.html"
     context_object_name = "products"
+
+    def get_queryset(self):
+        """
+        Получение и кеширование списка продуктов.
+        """
+        if CACHE_ENABLED:
+            products = cache.get("products_list")
+            if products is None:
+                products = Product.objects.all()
+                cache.set("products_list", products, 60 * 10)
+        else:
+            products = Product.objects.all()
+        return products
 
 
 class ProductDetailView(DetailView):
@@ -37,6 +55,13 @@ class ProductDetailView(DetailView):
         user = self.request.user
         context['is_moderator'] = (user.is_authenticated and user.groups.filter(name="Модератор продуктов").exists())
         return context
+
+    @method_decorator(cache_page(60 * 15))
+    def dispatch(self, request, *args, **kwargs):
+        """
+        Кеширует страницу продукта.
+        """
+        return super().dispatch(request, *args, **kwargs)
 
 
 class AddProductView(LoginRequiredMixin, CreateView):
