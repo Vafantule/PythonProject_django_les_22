@@ -194,3 +194,12 @@ class CategoryProductListView(ListView):
         category = get_object_or_404(Category, id=category_id)
         context["category"] = category
         return context
+
+
+class CategoryListView(ListView):
+    """
+    Отображение списка категорий.
+    """
+    model = Category
+    template_name = 'catalog/category_list.html'
+    context_object_name = "categories"
