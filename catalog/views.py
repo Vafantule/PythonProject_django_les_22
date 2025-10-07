@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.contrib.auth.mixins import (LoginRequiredMixin,
                                         PermissionRequiredMixin, UserPassesTestMixin)
 from django.http import HttpResponseForbidden
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse_lazy, reverse
 from django.views import View
 from django.views.generic import (CreateView, DeleteView, DetailView, ListView,
@@ -16,6 +16,7 @@ from django.core.cache import cache
 from django_les_22.settings import CACHE_ENABLED
 from .forms import ProductForm
 from .models import Category, Product
+from .services import get_products_by_category
 
 
 class HomeView(ListView):
@@ -168,3 +169,28 @@ class ProductUnpublishView(PermissionRequiredMixin, UpdateView):
 
     def get_success_url(self):
         return reverse("catalog:product_detail", kwargs={"pk": self.object.pk})
+
+
+class CategoryProductListView(ListView):
+    """
+    Представление отображения продуктов в заданной категории.
+    """
+    template_name = "catalog/products_by_category.html"
+    context_object_name = "products"
+
+    def get_queryset(self) -> Any:
+        """
+        Получение продуктов по категориям.
+        """
+        category_id = self.kwargs.get("category_id")
+        return get_products_by_category(category_id)
+
+    def get_context_data(self, **kwargs) -> dict:
+        """
+        Добавление объекта категории в контекст.
+        """
+        context = super().get_context_data(**kwargs)
+        category_id = self.kwargs.get("category_id")
+        category = get_object_or_404(Category, id=category_id)
+        context["category"] = category
+        return context
