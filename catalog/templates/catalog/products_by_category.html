@@ -23,6 +23,6 @@
   {% else %}
     <div class="alert alert-info">В данной категории товаров нет!</div>
   {% endif %}
-  <a href="{% url 'catalog:home' %}" class="btn btn-primary">Назад к каталогу</a>
+  <a href="{% url 'catalog:category_list' %}" class="btn btn-primary">Назад к списку категорий</a>
 </div>
 {% endblock %}
