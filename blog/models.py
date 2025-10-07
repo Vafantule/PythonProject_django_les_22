@@ -16,6 +16,9 @@ class BlogPost(models.Model):
     class Meta:
         verbose_name = "Запись блога"
         verbose_name_plural = "Записи блогов"
+        permissions = [
+            ("manage_blog", "Может управлять публикациями в блоге"),
+        ]
 
     def __str__(self):
         """
